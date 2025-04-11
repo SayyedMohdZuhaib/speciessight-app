@@ -83,7 +83,27 @@ export default function Home() {
                     Species: {speciesData.species} (
                     {speciesData.confidence.toFixed(2)})
                   </p>
-                  <p className="mt-1">{speciesData.description}</p>
+                  {speciesData.description && (
+                    <div>
+                      <h6 className="font-semibold mt-2">Description:</h6>
+                      {speciesData.description
+                        .split("\n\n")
+                        .map((paragraph, index) => {
+                          const [heading, ...content] = paragraph.split(":");
+                          const formattedContent = content.join(":").trim();
+                          return (
+                            <div key={index} className="mb-2">
+                              {heading && (
+                                <h6 className="font-medium capitalize">
+                                  {heading.replace("_", " ")}:
+                                </h6>
+                              )}
+                              <p className="text-sm">{formattedContent}</p>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
