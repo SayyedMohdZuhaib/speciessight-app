@@ -52,6 +52,11 @@ export default function Home() {
     }
   };
 
+  const handleReset = () => {
+    setImageUrl(null);
+    setSpeciesData(null);
+  };
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen py-2">
       <Toaster />
@@ -90,16 +95,29 @@ export default function Home() {
               className="mb-2"
             />
 
-            <Button
-              onClick={handleClassification}
-              disabled={loading}
-              className={classNames(
-                "bg-teal-500 text-white font-bold py-2 px-4 rounded",
-                loading ? "opacity-50 cursor-not-allowed" : "hover:bg-teal-700"
-              )}
-            >
-              {loading ? "Classifying..." : "Classify Species"}
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleClassification}
+                disabled={loading}
+                className={classNames(
+                  "bg-teal-500 text-white font-bold py-2 px-4 rounded",
+                  loading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-teal-700"
+                )}
+              >
+                {loading ? "Classifying..." : "Classify Species"}
+              </Button>
+
+              <Button
+                onClick={handleReset}
+                disabled={loading}
+                variant="outline"
+                className="font-bold py-2 px-4 rounded"
+              >
+                Reset
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
