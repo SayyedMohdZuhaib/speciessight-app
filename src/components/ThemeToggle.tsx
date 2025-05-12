@@ -1,31 +1,29 @@
+// src/components/ThemeToggle.tsx
+"use client";
 
-import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button"; // Assuming shadcn/ui
 
 interface ThemeToggleProps {
   isDarkMode: boolean;
   onToggle: () => void;
 }
 
-const ThemeToggle = ({ isDarkMode, onToggle }: ThemeToggleProps) => {
+export default function ThemeToggle({ isDarkMode, onToggle }: ThemeToggleProps) {
   return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={onToggle}
-      className={`p-2 rounded-full transition-colors ${
-        isDarkMode ? "bg-gray-800 text-gray-200" : "bg-gray-100 text-gray-800"
-      }`}
-      aria-label="Toggle dark mode"
+      aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+      className="rounded-full transition-all duration-300 ease-in-out hover:bg-black/10 dark:hover:bg-white/10"
     >
-      <motion.div
-        initial={false}
-        animate={{ rotate: isDarkMode ? 0 : 180 }}
-        transition={{ duration: 0.3 }}
-      >
-        {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
-      </motion.div>
-    </motion.button>
+      {isDarkMode ? (
+        <Sun className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-500 rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
+      ) : (
+        <Moon className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-500 rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
+      )}
+       <span className="sr-only">Toggle theme</span>
+    </Button>
   );
-};
-
-export default ThemeToggle;
+}

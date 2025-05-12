@@ -1,5 +1,10 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
+
+if (!process.env.GOOGLE_GENAI_API_KEY) {
+  throw new Error('Missing GOOGLE_GENAI_API_KEY environment variable.');
+}
 
 export const ai = genkit({
   promptDir: './prompts',

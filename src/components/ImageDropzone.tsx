@@ -1,76 +1,89 @@
+// src/components/ImageDropzone.tsx
+"use client";
 
-import { useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { Camera, Upload } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useCallback } from "react";
+import { useDropzone, FileWithPath } from "react-dropzone";
+import { UploadCloud, ImageIcon, AlertTriangle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"; // from shadcn/ui
 
 interface ImageDropzoneProps {
   onImageUpload: (file: File) => void;
   isDarkMode: boolean;
 }
 
-const ImageDropzone = ({ onImageUpload, isDarkMode }: ImageDropzoneProps) => {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+export default function ImageDropzone({ onImageUpload, isDarkMode }: ImageDropzoneProps) {
+  const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) onImageUpload(file);
-  };
+  const onDrop = useCallback(
+    (acceptedFiles: FileWithPath[], rejectedFiles: any[]) => {
+      if (rejectedFiles && rejectedFiles.length > 0) {
+        toast({
+          title: "File Upload Error",
+          description: rejectedFiles[0].errors[0].message || "Invalid file type or size.",
+          variant: "destructive",
+          duration: 4000,
+        });
+        return;
+      }
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) {
-      onImageUpload(e.dataTransfer.files[0]);
-    }
-  };
+      if (acceptedFiles && acceptedFiles.length > 0) {
+        const file = acceptedFiles[0];
+        onImageUpload(file);
+      }
+    },
+    [onImageUpload, toast]
+  );
+
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+      "image/webp": [],
+      "image/gif": [],
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB
+  });
+
+  const baseClasses = "flex flex-col items-center justify-center w-full h-64 sm:h-72 p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const modeClasses = isDarkMode
+    ? "border-gray-600 hover:border-gray-500 bg-gray-700/20 hover:bg-gray-700/40 focus:ring-nature-leaf/70"
+    : "border-gray-300 hover:border-gray-400 bg-gray-50/30 hover:bg-gray-100/50 focus:ring-nature-moss/70";
+  
+  const activeClasses = isDragActive 
+    ? (isDarkMode ? "border-nature-leaf bg-gray-600/50" : "border-nature-moss bg-green-50/70")
+    : "";
+  const acceptClasses = isDragAccept ? (isDarkMode ? "border-green-400" : "border-green-500") : "";
+  const rejectClasses = isDragReject ? (isDarkMode ? "border-red-400 bg-red-900/30" : "border-red-500 bg-red-100/50") : "";
+
 
   return (
-    <motion.div
-      className={`w-full border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${
-        isDarkMode
-          ? "border-gray-700 bg-gray-800/50 hover:bg-gray-700/50"
-          : "border-gray-200 bg-gray-50 hover:bg-gray-100"
-      } ${isDragging ? "border-nature-leaf" : ""}`}
-      whileHover={{ scale: 1.01 }}
-      onClick={() => fileInputRef.current?.click()}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={handleDrop}
-      style={{ height: "180px" }}
+    <div
+      {...getRootProps()}
+      className={`${baseClasses} ${modeClasses} ${activeClasses} ${acceptClasses} ${rejectClasses}`}
     >
-      <div className="flex flex-col items-center space-y-2">
-        <motion.div
-          animate={{ scale: isDragging ? 1.1 : 1 }}
-          className={`rounded-full p-3 mb-2 ${
-            isDarkMode ? "bg-gray-700" : "bg-gray-100"
-          }`}
-        >
-          {isDragging ? (
-            <Camera className="w-6 h-6 text-nature-leaf" />
-          ) : (
-            <Upload className={`w-6 h-6 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`} />
-          )}
-        </motion.div>
-        <p className="text-sm font-medium">
-          Drop your image here or{" "}
-          <span className="text-nature-leaf underline">browse</span>
-        </p>
-        <p className="text-xs opacity-60">Supports JPG, PNG</p>
-      </div>
-      <Input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png, image/jpeg"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-    </motion.div>
+      <input {...getInputProps()} />
+      {isDragReject ? (
+        <AlertTriangle className={`w-16 h-16 mb-4 ${isDarkMode ? "text-red-400" : "text-red-500"}`} />
+      ) : isDragActive ? (
+         <UploadCloud className={`w-16 h-16 mb-4 animate-bounce ${isDarkMode ? "text-nature-leaf" : "text-nature-moss"}`} />
+      ) : (
+        <ImageIcon className={`w-16 h-16 mb-4 ${isDarkMode ? "text-gray-500 group-hover:text-gray-400" : "text-gray-400 group-hover:text-gray-500"}`} />
+      )}
+     
+      <p className={`text-lg font-semibold text-center ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+        {isDragReject 
+            ? "Invalid file type!"
+            : isDragActive 
+                ? "Drop the image here..." 
+                : "Drag & drop an image here"}
+      </p>
+      <p className={`text-sm text-center ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+        or click to select a file
+      </p>
+      <p className={`text-xs mt-3 ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}>
+        (PNG, JPG, WEBP, GIF up to 5MB)
+      </p>
+    </div>
   );
-};
-
-export default ImageDropzone;
+}
